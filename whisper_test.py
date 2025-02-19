@@ -13,7 +13,8 @@ model = whisper.load_model("base")
 def record_audio(filename="temp.wav", duration=10):
     print("Listening...")
     recording = sd.rec(int(Sample_rate*duration), samplerate=Sample_rate, channels=1, dtype=np.float32)
-
+    sd.wait()
+    
     with wave.open(filename, "wb") as wf:
         wf.setnchannels(1)
         wf.setsampwidth(2)
@@ -21,6 +22,7 @@ def record_audio(filename="temp.wav", duration=10):
         wf.writeframes((recording * 32767).astype(np.int16).tobytes())
 
     return filename    
+
 def detect_silence(audio_data, sample_rate, threshold=Silence_threshold, duration=Silence_duration):
     chunk_size = int(sample_rate*0.2)
     silent_chunks = 0
@@ -29,13 +31,14 @@ def detect_silence(audio_data, sample_rate, threshold=Silence_threshold, duratio
         chunk = audio_data[i:i+chunk_size]
         volume = np.linalg.norm(chunk) / np.sqrt(len(chunk))
 
-    if volume < threshold:
-        silent_chunks +=1
-    else:
-        silent_chunks = 0
-    if silent_chunks >= (sample_rate*duration)/chunk_size:
-        return True
+        if volume < threshold:
+            silent_chunks +=1
+        else:
+            silent_chunks = 0
+        if silent_chunks >= (sample_rate*duration)/chunk_size:
+            return True
     return False
+
 def main():
     while True:
         filename = record_audio(duration=10)
