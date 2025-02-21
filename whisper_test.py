@@ -3,6 +3,9 @@ import sounddevice as sd
 import numpy as np
 import wave
 import time
+import keyboard
+import os
+import sys
  
 Sample_rate = 16000 #16kHz
 Silence_threshold = 0.01
@@ -11,7 +14,7 @@ Silence_duration = 3
 model = whisper.load_model("base")
 
 def record_audio(filename="temp.wav", duration=10):
-    print("Listening...")
+    print("Now listening... Press 'q' to stop and translate. \n")
     recording = sd.rec(int(Sample_rate*duration), samplerate=Sample_rate, channels=1, dtype=np.float32)
     sd.wait()
     
@@ -23,38 +26,28 @@ def record_audio(filename="temp.wav", duration=10):
 
     return filename    
 
-def detect_silence(audio_data, sample_rate, threshold=Silence_threshold, duration=Silence_duration):
-    chunk_size = int(sample_rate*0.2)
-    silent_chunks = 0
-    
-    for i in range(0,len(audio_data)):
-        chunk = audio_data[i:i+chunk_size]
-        volume = np.linalg.norm(chunk) / np.sqrt(len(chunk))
-
-        if volume < threshold:
-            silent_chunks +=1
-        else:
-            silent_chunks = 0
-        if silent_chunks >= (sample_rate*duration)/chunk_size:
-            return True
-    return False
+"""
+I intend to have handsigns indicating stop and record speech
+for now I need to be able to translate it, either might be the code or smtg
+"""
 
 def main():
-    while True:
-        filename = record_audio(duration=10)
+    
+    filename = record_audio(duration=10)
+    print("Waiting for 'q' key to transcribe... ")
+    while not keyboard.is_pressed('q'):
+        time.sleep(0.1)
+    print("Transcribing...(beep boop)")
 
-        with wave.open(filename,"rb") as wf:
-            audio_data = np.frombuffer(wf.readframes(wf.getnframes()), dtype=np.int16)
-        
-        if detect_silence(audio_data, Sample_rate):
-            print("Silence detected. Transcribing...")
+    if not os.path.exists(filename):
+        print("Error: Audio file is not found.")
+        sys.exit(1)
+    result = model.transcribe(filename)
+    transcription = result["text"] 
 
-            # Transcribe using Whisper
-            result = model.transcribe(filename)
-            print("\nTranscription:\n", result["text"])
-
-            # Pause to avoid constant looping
-            time.sleep(1)
-
+    print("Programed finished. Now exiting...")
+    return transcription
+    
+    
 if __name__ == "__main__":
-    main()
+    result = main()
