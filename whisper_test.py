@@ -6,14 +6,12 @@ import time
 import keyboard
 import os
 import sys
- 
+
 Sample_rate = 16000 #16kHz
-Silence_threshold = 0.01
-Silence_duration = 3
 
 model = whisper.load_model("base")
 
-def record_audio(filename="temp.wav", duration=10):
+def record_audio(filename="temp.wav", duration=5):
     print("Now listening... Press 'q' to stop and translate. \n")
     recording = sd.rec(int(Sample_rate*duration), samplerate=Sample_rate, channels=1, dtype=np.float32)
     sd.wait()
@@ -29,11 +27,14 @@ def record_audio(filename="temp.wav", duration=10):
 """
 I intend to have handsigns indicating stop and record speech
 for now I need to be able to translate it, either might be the code or smtg
+"q" to quit the program (0)
+"r" to record voice (1)
+"s" to stop recording voice (2)
 """
 
 def main():
     
-    filename = record_audio(duration=10)
+    filename = record_audio(duration=5)
     print("Waiting for 'q' key to transcribe... ")
     while not keyboard.is_pressed('q'):
         time.sleep(0.1)

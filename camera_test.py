@@ -8,10 +8,6 @@ face_cascade = cv.CascadeClassifier(cv.data.haarcascades + 'haarcascade_frontalf
 
 while True:
     ret, frame = cap.read()
-    #cv.imshow('Iframe', frame)
-
-    #flipped_frame = cv.flip(frame, 1)
-    #cv.imshow('flipframe', flipped_frame)
 
     gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
 
@@ -32,12 +28,14 @@ while True:
         center_x = x + w // 2
         center_y = y + h // 2
 
-        # Draw the bounding box and center on the closest face
-        cv.rectangle(frame, (x, y), ((x + w), (y + h)), (255, 0, 0), 2)
-        cv.circle(frame, (center_x, center_y), 5, (0, 255, 0), -1)
+        overlay = frame.copy()
+        opacity = 0
+        cv.rectangle(frame, (x, y), ((x + w), (y + h)), (192, 192, 192), 2)
+        cv.addWeighted(overlay, opacity, frame, 1 - opacity, 0, frame)
         
-        # Print the center coordinates in the terminal
-        print(f"({center_x}, {center_y})")
+        cv.circle(frame, (center_x, center_y), 5, (255, 255, 255), -1)
+        
+        #print(f"({center_x}, {center_y})")
 
     cv.imshow('FaceDetect', frame)
 
@@ -46,3 +44,9 @@ while True:
 
 cap.release()
 cv.destroyAllWindows
+
+"""
+ASL detection, finger signs and face recognition
+link to whisper_test.py, know when to start/stop recording voice
+Add timer(extra)
+"""
