@@ -11,16 +11,24 @@ Sample_rate = 16000 #16kHz
 
 model = whisper.load_model("base")
 
-def record_audio(filename="temp.wav", duration=5):
-    print("Now listening... Press 'q' to stop and translate. \n")
-    recording = sd.rec(int(Sample_rate*duration), samplerate=Sample_rate, channels=1, dtype=np.float32)
-    sd.wait()
+def record_audio(filename="temp.wav"):
+    print("Now listening... Press 's' to stop and translate. \n")
+    q = []
+    def callback(indata, frames, time_info, status):
+        if status:
+            print(status)
+        q.append(indata.copy())
     
+    with sd.InputStream(samplerate=Sample_rate, channels=1, dtype=np.float32, callback=callback):
+        while not keyboard.is_pressed('s'):
+            time.sleep(0.1)
+    print("\nRecording stopped...")
+
     with wave.open(filename, "wb") as wf:
         wf.setnchannels(1)
         wf.setsampwidth(2)
         wf.setframerate(Sample_rate)
-        wf.writeframes((recording * 32767).astype(np.int16).tobytes())
+        wf.writeframes((np.concatenate(q) * 32767).astype(np.int16).tobytes())
 
     return filename    
 
@@ -32,23 +40,17 @@ for now I need to be able to translate it, either might be the code or smtg
 "s" to stop recording voice (2)
 """
 
-def main():
-    
-    filename = record_audio(duration=5)
-    print("Waiting for 'q' key to transcribe... ")
-    while not keyboard.is_pressed('q'):
-        time.sleep(0.1)
-    print("Transcribing...(beep boop)")
+def transcribe_audio():
+    filename = record_audio()
 
     if not os.path.exists(filename):
         print("Error: Audio file is not found.")
-        sys.exit(1)
+        return
+    
+    print("Transcribing...(beep boop)")
     result = model.transcribe(filename)
     transcription = result["text"] 
 
-    print("Programed finished. Now exiting...")
+    print("Text: ",transcription)
     return transcription
     
-    
-if __name__ == "__main__":
-    result = main()
