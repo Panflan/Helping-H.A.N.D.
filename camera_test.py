@@ -32,10 +32,13 @@ def process_speech():
 
 # OpenCV
 
-cap = cv.VideoCapture(2)
+cap = cv.VideoCapture(0)
 '''
- numbers represent which camera or device, 0 is for front 
+ 0 - front camera
+ 1 - back camera
+ 2 - connected device
 '''
+
 face_cascade = cv.CascadeClassifier(cv.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
 model_dict = pickle.load(open('./model.p', 'rb'))
