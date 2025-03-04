@@ -1,16 +1,16 @@
 from dotenv import load_dotenv
 import os
 import google.generativeai as genai
-from whisper_test import main
+from whisper_test import transcribe_audio
 
-word_caller = main()
+transcription = transcribe_audio() 
 
 load_dotenv(dotenv_path="API.env") 
 
 API_KEY = os.getenv("API_KEY")
 genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel("gemini-1.5-flash")
-response = model.generate_content(f"{word_caller}")
+response = model.generate_content(f"{transcription}")
 print(response.text)
 
 
